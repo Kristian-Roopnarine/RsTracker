@@ -39,31 +39,37 @@ def sort_item(dataframe,col):
     number = int(input('Number: '))
     sort = col[number - 1]
     print(dataframe.sort_values(by = sort))
+    return sort
 
 def sort_by_date(dataframe):
     return dataframe.sort_values(by='Day',ascending=False)
 
 def edit_item(dataframe,col):
-    sort_item(dataframe,col)
+    dataframe.set_index(sort_item(dataframe,col),inplace=True)
+    print(dataframe)
     item = input('Which item do you want to edit: ')
     column = input('Which value do you want to edit: ')
-    new_value = input('What is the updated value: ')
-    try:
-        new_value = float(new_value)
-    except ValueError:
-        new_value = new_value.title()
-    dataframe.loc[item.title(),column.title()] = new_value
-    return dataframe.reset_index(drop=True)
+    if column.title() in col:
+        new_value = input('What is the updated value: ')
+        try:
+            new_value = float(new_value)
+        except ValueError:
+            new_value = new_value.title()
+        dataframe.loc[item.title(),column.title()] = new_value
+        return dataframe.reset_index()
+    else:
+        print('Sorry that value could not be found. Try again.')
+        return dataframe.reset_index()
 
 def delete_item(dataframe,col):
     sort_item(dataframe,col)
     item = input('What item do you want to delete: ')
     for i in range(len(col)):
-        item = dataframe[dataframe[col[i]] == item.title()]
-        item_index = item.index
+        df_item = dataframe[dataframe[col[i]] == item.title()]
+        item_index = df_item.index
         if len(item_index) > 1:
             print('Multiple %s logs found.' % item.title())
-            print(item)
+            print(df_item)
             delete = int(input('Which entry number would you like to delete?'))
             dataframe.drop(delete,inplace=True)
             dataframe.reset_index(drop=True,inplace=True)
@@ -73,7 +79,10 @@ def delete_item(dataframe,col):
             dataframe.reset_index(drop=True,inplace=True)
             return dataframe
         else:
-            continue
+            print('________________')
+            print('Item not found.')
+            print('________________')
+            return dataframe
 
 def check_log(dataframe,col):
     print(dataframe)
@@ -156,5 +165,6 @@ def main():
         else:
             save_to_excel(user_df,sort_by_date(log_df),filename)
             break    
+
 
 main()
